@@ -1,3 +1,4 @@
+package com.group16.app;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
@@ -7,6 +8,8 @@ import java.io.IOException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+
+import org.json.JSONObject;
 
 /** 
  Skeleton of a ContinuousIntegrationServer which acts as webhook
@@ -31,6 +34,18 @@ public class ContinuousIntegrationServer extends AbstractHandler
         // 1st clone your repository
         // 2nd compile the code
 
+
+        // 3rd run test
+
+        // 4th notify the result        
+        String payload = request.getParameter("payload");
+        JSONObject json = new JSONObject(payload);
+        String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
+        String repo = json.getJSONObject("repository").getString("name");
+        String commitSha = json.getString("after");
+
+        Notification.sendNotification(Status.PENDING, owner, repo, commitSha);
+        
         response.getWriter().println("CI job done");
     }
  
