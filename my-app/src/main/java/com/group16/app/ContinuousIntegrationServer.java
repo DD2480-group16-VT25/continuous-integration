@@ -1,3 +1,5 @@
+package com.group16.app;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
@@ -25,11 +27,28 @@ public class ContinuousIntegrationServer extends AbstractHandler
         baseRequest.setHandled(true);
 
         System.out.println(target);
+        response.getWriter().println(target);
+
 
         // here you do all the continuous integration tasks
         // for example
         // 1st clone your repository
         // 2nd compile the code
+        // 3rd run tests
+
+
+         if ("/webhook".equals(target) && "POST".equalsIgnoreCase(request.getMethod())) {
+            RunTests.handleRequest(request, response);
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().println("error");
+            
+        }
+
+
+        // 4th notify
+        String payload = request.getParameter("payload");
+        
 
         response.getWriter().println("CI job done");
     }
