@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-// import org.apache.maven.cli.MavenCli;
 import org.json.JSONObject;
 import java.io.File;
 
@@ -16,20 +15,20 @@ public class RunTests {
                                     HttpServletResponse response) 
             throws IOException, ServletException {
         
-        response.setContentType("text/html;charset=utf-8");
+        response.setContentType("application/json;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
 
-        // Read JSON payload
+        // Get JSON payload
         String payload = request.getReader().lines().collect(Collectors.joining());
         JSONObject json = new JSONObject(payload);
 
-        // Extract branch name
+        // Get branch name
         String ref = json.optString("ref", "");
         String branch = ref.replace("refs/heads/", ""); 
 
         System.out.println("Webhook received for branch: " + branch);
 
-        if ("assessment".equals(branch)) {
+        if ("feat/testing".equals(branch)) { // testing
             System.out.println("Running Maven tests on branch: " + branch);
 
             // TODO run tests
