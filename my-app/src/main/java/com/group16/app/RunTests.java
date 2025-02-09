@@ -26,7 +26,11 @@ public class RunTests {
         String ref = json.optString("ref", "");
         String branch = ref.replace("refs/heads/", ""); 
 
-        System.out.println("Webhook received for branch: " + branch);
+        System.out.println("1 Webhook received for branch: " + branch);
+        System.out.println("++++++");
+        System.out.println(branch);
+        System.out.println("feat/testing");
+        System.out.println("++++++");
 
         if ("feat/testing".equals(branch)) { // testing
             System.out.println("Running Maven tests on branch: " + branch);
@@ -41,8 +45,8 @@ public class RunTests {
                 response.getWriter().println("Maven tests failed on branch: " + branch);
             }
         } else {
-            System.out.println("Skipping tests, not the assessment branch.");
-            response.getWriter().println("Webhook received for branch: " + branch);
+            System.out.println("Skipping tests, not the feat/testing branch.");
+            response.getWriter().println("2 Webhook received for branch: " + branch);
         }
     }
 }
