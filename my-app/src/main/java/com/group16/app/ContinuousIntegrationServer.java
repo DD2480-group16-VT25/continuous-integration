@@ -1,3 +1,5 @@
+package com.group16.app;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
@@ -20,18 +22,29 @@ public class ContinuousIntegrationServer extends AbstractHandler
                        HttpServletResponse response) 
         throws IOException, ServletException
     {
-        response.setContentType("text/html;charset=utf-8");
+        response.setContentType("application/json;charset=utf-8");
+
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
-
-        System.out.println(target);
 
         // here you do all the continuous integration tasks
         // for example
         // 1st clone your repository
         // 2nd compile the code
+        
+        // 3rd run tests
+        if ("POST".equalsIgnoreCase(request.getMethod())) {
+            RunTests.handleRequest(request, response);
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().println("{\"error\": \"Error with webhook post\"}");
+            
+        }
 
-        response.getWriter().println("CI job done");
+        // 4th notify
+        String payload = request.getParameter("payload");
+        
+        response.getWriter().println("{\"JOB\": \"CI job done\"}");
     }
  
     // used to start the CI server in command line
