@@ -38,7 +38,7 @@ public class ContinuousIntegrationServer extends AbstractHandler
         // 3rd run tests
 
 
-         if ("/webhook".equals(target) && "POST".equalsIgnoreCase(request.getMethod())) {
+        if ("/webhook".equals(target) && "POST".equalsIgnoreCase(request.getMethod())) {
             RunTests.handleRequest(request, response);
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -46,11 +46,9 @@ public class ContinuousIntegrationServer extends AbstractHandler
             
         }
 
-
         // 4th notify
         String payload = request.getParameter("payload");
         
-
         response.getWriter().println("CI job done");
     }
  
