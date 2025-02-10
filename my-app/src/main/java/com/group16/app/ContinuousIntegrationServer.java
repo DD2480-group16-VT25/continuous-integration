@@ -39,12 +39,13 @@ public class ContinuousIntegrationServer extends AbstractHandler
 
         // 4th notify the result        
         String payload = request.getParameter("payload");
+        String requestURL = request.getRequestURL().toString();
         JSONObject json = new JSONObject(payload);
         String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
         String repo = json.getJSONObject("repository").getString("name");
         String commitSha = json.getString("after");
 
-        Notification.sendNotification(Status.PENDING, owner, repo, commitSha);
+        Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
         
         response.getWriter().println("CI job done");
     }
