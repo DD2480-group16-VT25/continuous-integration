@@ -74,7 +74,7 @@ public class RunTests {
             // Run Maven tests
             // -X for debugging tests
             // result = 0 for pass, otherwise fail
-            int result = cli.doMain(new String[]{"test", "-X"}, projectDirectory.getAbsolutePath(), System.out, System.err);
+            int result = cli.doMain(new String[]{"test", "-Dtest=com.group16.app.AppTest", "-X"}, projectDirectory.getAbsolutePath(), System.out, System.err);
 
             System.out.println("Maven test finished with exit code: " + result);
             return result;
