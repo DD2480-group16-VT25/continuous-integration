@@ -2,85 +2,108 @@ package com.group16.app;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.stream.Collectors;
-
-import org.apache.maven.cli.MavenCli;
-import org.json.JSONObject;
 import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import org.apache.maven.shared.invoker.*;
+import org.json.JSONObject;
 
 /**
- * Handles the request and check if it is from the assessment branch (for now on testing branch for testing purposes)
+ * Handles incoming webhook requests and triggers Maven test execution.
+ * It ensures tests only run on the 'assessment' branch.
  */
-
 public class RunTests {
-    public static void handleRequest(HttpServletRequest request, 
-                                    HttpServletResponse response) 
-            throws IOException, ServletException {
-        
-        response.setContentType("application/json;charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+    /**
+     * Handles incoming HTTP requests from GitHub webhooks.
+     * Reads the JSON payload, extracts the branch name, and runs tests only if the branch is 'assessment'.
+     *
+     * @param request  The incoming HTTP request containing the webhook payload.
+     * @param response The HTTP response object to send back results.
+     * @return HTTP status code (200 if successful, 400 if bad request, 500 if tests fail).
+     * @throws IOException If there is an issue reading the request body.
+     */
+    public static int handleRequest(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            response.setContentType("application/json;charset=utf-8");
 
-        // Get JSON payload
-        String payload = request.getReader().lines().collect(Collectors.joining());
-        JSONObject json = new JSONObject(payload);
+            // Read JSON
+            String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 
-        // Get branch name
-        String ref = json.optString("ref", "");
-        String branch = ref.replace("refs/heads/", ""); 
-
-        // Some testing output - will be removed
-        System.out.println("1 Webhook received for branch: " + branch);
-        System.out.println("++++++");
-        System.out.println(branch);
-        System.out.println("feat/testing");
-        System.out.println("++++++");
-
-        if ("feat/testing".equals(branch)) { // will be assessment
-            System.out.println("Running Maven tests on branch: " + branch);
-
-            int result = runMavenTests();
-
-            System.out.println("result" + result);
-
-            if (result == 0) {
-                // if the test are successful
-                response.getWriter().println("{\"success\": \"Maven tests executed successfully\"}");
-            } else {
-                // if tests fail
-                response.getWriter().println("{\"failure\": \"Maven tests failed\"}");
+            // Error if the json is blank
+            if (jsonPayload.isBlank()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().println("{\"error\": \"Empty JSON payload\"}");
+                return HttpServletResponse.SC_BAD_REQUEST;
             }
-        } else {
-            // not on the assessment branch, maybe unnecessary 
-            response.getWriter().println("{\"testSkipped\": \"not the assessment branch\"}");
+
+            JSONObject json = new JSONObject(jsonPayload);
+
+            // Extract branch
+            String branch = json.optString("ref", "unknown");
+            if (branch.equals("refs/heads/feat/testing")) { // testing branch for now
+                response.setStatus(HttpServletResponse.SC_OK);
+
+                // Run Maven Tests
+                int testResult = runMavenTests();
+                
+                if (testResult == 0) {
+                    response.getWriter().println("{\"status\": \"Tests passed\"}");
+                    return HttpServletResponse.SC_OK;
+                } else {
+                    response.getWriter().println("{\"status\": \"Tests failed\", \"exit_code\": " + testResult + "}");
+                    return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+                }
+            } else {
+                response.getWriter().println("{\"status\": \"Not the assessment branch\"}");
+                return HttpServletResponse.SC_OK;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         }
     }
 
     /**
-     * Runs Maven tests using MavenCli API.
-     * @return 0 if tests pass, non-zero if they fail.
+     * Executes Maven tests using the Maven Shared Invoker API.
+     *
+     * @return Exit code from the Maven test execution (0 if successful, >0 if tests fail).
      */
-    private static int runMavenTests() {
+    public static int runMavenTests() {
         try {
-            // Set up MavenCli
-            MavenCli cli = new MavenCli();
-            File projectDirectory = new File(".").getAbsoluteFile();
-            System.out.println("Running Maven tests in directory: " + projectDirectory.getAbsolutePath());
+            Invoker invoker = new DefaultInvoker();
 
-            System.setProperty("maven.multiModuleProjectDirectory", projectDirectory.getAbsolutePath());
+            // Auto-detect Maven Home
+            String mavenHome = System.getenv("MAVEN_HOME");
+            if (mavenHome == null || mavenHome.isEmpty()) {
+                mavenHome = System.getProperty("maven.home");
+            }
+            if (mavenHome == null || mavenHome.isEmpty()) {
+                mavenHome = "/usr/share/maven"; // Default for Linux/macOS
+            }
+            invoker.setMavenHome(new File("/usr/share/maven")); // Set Maven installation directory
+            invoker.setWorkingDirectory(new File(".")); // Project root directory
 
-            // Run Maven tests
-            // -X for debugging tests
-            // result = 0 for pass, otherwise fail
-            int result = cli.doMain(new String[]{"test", "-Dtest=com.group16.app.AppTest", "-X"}, projectDirectory.getAbsolutePath(), System.out, System.err);
+            InvocationRequest request = new DefaultInvocationRequest();
+            request.setPomFile(new File("pom.xml"));
+            request.setGoals(Collections.singletonList("test")); // Run tests
 
-            System.out.println("Maven test finished with exit code: " + result);
-            return result;
-        } catch (Exception e) {
+            // Capture Maven output
+            request.setOutputHandler(System.out::println);
+
+            InvocationResult result = invoker.execute(request);
+
+            if (result.getExitCode() == 0) {
+                System.out.println("Tests passed successfully.");
+            } else {
+                System.err.println("Tests failed with exit code: " + result.getExitCode());
+            }
+
+            return result.getExitCode();
+
+        } catch (MavenInvocationException e) {
             e.printStackTrace();
-            return -1; // Failure
+            return -1;
         }
     }
 }

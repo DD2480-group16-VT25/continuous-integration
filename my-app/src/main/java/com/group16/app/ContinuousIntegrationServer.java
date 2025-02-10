@@ -27,20 +27,12 @@ public class ContinuousIntegrationServer extends AbstractHandler
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
 
-        System.out.println("target");
-        System.out.println(target);
-        System.out.println("request");
-        System.out.println(request);
-        // response.getWriter().println(target);
-
-
         // here you do all the continuous integration tasks
         // for example
         // 1st clone your repository
         // 2nd compile the code
+        
         // 3rd run tests
-
-
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             RunTests.handleRequest(request, response);
         } else {
