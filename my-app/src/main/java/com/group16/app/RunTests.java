@@ -14,6 +14,7 @@ import org.json.JSONObject;
  * It ensures tests only run on the 'assessment' branch.
  */
 public class RunTests {
+    
     /**
      * Handles incoming HTTP requests from GitHub webhooks.
      * Reads the JSON payload, extracts the branch name, and runs tests only if the branch is 'assessment'.
@@ -37,11 +38,20 @@ public class RunTests {
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
 
-            JSONObject json = new JSONObject(jsonPayload);
+             JSONObject json;
+
+            try {
+                json = new JSONObject(jsonPayload);
+                System.out.println("Received JSON: " + json.toString());
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().println("{\"error\": \"Invalid JSON format\"}");
+                return HttpServletResponse.SC_BAD_REQUEST;
+            }
 
             // Extract branch
             String branch = json.optString("ref", "unknown");
-            if (branch.equals("refs/heads/feat/testing")) { // testing branch for now
+            if (branch.equals("refs/heads/feat/runtests")) { // testing branch for now
                 response.setStatus(HttpServletResponse.SC_OK);
 
                 // Run Maven Tests
