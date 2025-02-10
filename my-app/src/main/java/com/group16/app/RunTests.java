@@ -47,15 +47,14 @@ public class RunTests {
 
             if (result == 0) {
                 // if the test are successful
-                response.getWriter().println("Maven tests executed successfully on branch: " + branch);
+                response.getWriter().println("{\"success\": \"Maven tests executed successfully\"}");
             } else {
                 // if tests fail
-                response.getWriter().println("Maven tests failed on branch: " + branch);
+                response.getWriter().println("{\"failure\": \"Maven tests failed\"}");
             }
         } else {
             // not on the assessment branch, maybe unnecessary 
-            System.out.println("Skipping tests, not the assessment branch.");
-            response.getWriter().println("Webhook received for branch: " + branch);
+            response.getWriter().println("{\"testSkipped\": \"not the assessment branch\"}");
         }
     }
 

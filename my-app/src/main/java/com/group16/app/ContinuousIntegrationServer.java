@@ -27,8 +27,11 @@ public class ContinuousIntegrationServer extends AbstractHandler
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
 
+        System.out.println("target");
         System.out.println(target);
-        response.getWriter().println(target);
+        System.out.println("request");
+        System.out.println(request);
+        // response.getWriter().println(target);
 
 
         // here you do all the continuous integration tasks
@@ -38,18 +41,18 @@ public class ContinuousIntegrationServer extends AbstractHandler
         // 3rd run tests
 
 
-        if ("/webhook".equals(target) && "POST".equalsIgnoreCase(request.getMethod())) {
+        if ("POST".equalsIgnoreCase(request.getMethod())) {
             RunTests.handleRequest(request, response);
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().println("error");
+            response.getWriter().println("{\"error\": \"Error with webhook post\"}");
             
         }
 
         // 4th notify
         String payload = request.getParameter("payload");
         
-        response.getWriter().println("CI job done");
+        response.getWriter().println("{\"JOB\": \"CI job done\"}");
     }
  
     // used to start the CI server in command line
