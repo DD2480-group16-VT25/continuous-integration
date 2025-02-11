@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 /**
  * Handles incoming webhook requests and triggers Maven test execution.
- * It ensures tests only run on the 'assessment' branch.
+ * Ensures tests only run on the 'assessment' branch.
  */
 public class RunTests {
     
@@ -21,31 +21,30 @@ public class RunTests {
      *
      * @param request  The incoming HTTP request containing the webhook payload.
      * @param response The HTTP response object to send back results.
-     * @return HTTP status code (200 if successful, 400 if bad request, 500 if tests fail).
+     * @return HTTP status code (200 if successful, 400 if bad request, 500 if no response is written).
      * @throws IOException If there is an issue reading the request body.
      */
     public static int handleRequest(HttpServletRequest request, HttpServletResponse response) {
         try {
-            response.setContentType("application/json;charset=utf-8");
+            response.setContentType("text/html;charset=utf-8");
 
-            // Read JSON
+            // Read JSON payload from the request body
             String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 
-            // Error if the json is blank
+            // Error if JSON is blank
             if (jsonPayload.isBlank()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("{\"error\": \"Empty JSON payload\"}");
+                response.getWriter().println("Empty request payload");
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
 
-             JSONObject json;
-
+            JSONObject json;
             try {
                 json = new JSONObject(jsonPayload);
                 System.out.println("Received JSON: " + json.toString());
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("{\"error\": \"Invalid JSON format\"}");
+                response.getWriter().println("Invalid request format");
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
 
@@ -58,14 +57,14 @@ public class RunTests {
                 int testResult = runMavenTests();
                 
                 if (testResult == 0) {
-                    response.getWriter().println("{\"status\": \"Tests passed\"}");
+                    response.getWriter().println("Tests passed");
                     return HttpServletResponse.SC_OK;
                 } else {
-                    response.getWriter().println("{\"status\": \"Tests failed\", \"exit_code\": " + testResult + "}");
+                    response.getWriter().println("Tests failed, exit code = " + testResult);
                     return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
                 }
             } else {
-                response.getWriter().println("{\"status\": \"Not the assessment branch\"}");
+                response.getWriter().println("Not the assessment branch");
                 return HttpServletResponse.SC_OK;
             }
         } catch (IOException e) {
@@ -91,7 +90,7 @@ public class RunTests {
             if (mavenHome == null || mavenHome.isEmpty()) {
                 mavenHome = "/usr/share/maven"; // Default for Linux/macOS
             }
-            invoker.setMavenHome(new File("/usr/share/maven")); // Set Maven installation directory
+            invoker.setMavenHome(new File(mavenHome)); // Set Maven installation directory
             invoker.setWorkingDirectory(new File(".")); // Project root directory
 
             InvocationRequest request = new DefaultInvocationRequest();

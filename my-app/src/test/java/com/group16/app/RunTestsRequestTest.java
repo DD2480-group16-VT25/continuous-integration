@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.stream.Collectors;
 import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,11 +23,15 @@ public class RunTestsRequestTest {
      */
     @Test
     void testExtractBranchFromValidPayload() throws IOException {
-        // A part of a valid payload
-        String payload = "{\"ref\": \"refs/heads/assessment\"}";
-        JSONObject json = new JSONObject(payload);
+        // Mock request with a JSON payload
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("{\"ref\": \"refs/heads/assessment\"}")));
 
-        // Get branch from payload
+        // Read JSON payload
+        String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        JSONObject json = new JSONObject(jsonPayload);
+
+        // Extract branch
         String branch = json.optString("ref", "unknown");
 
         // Assert the correct branch is extracted
@@ -34,14 +39,19 @@ public class RunTestsRequestTest {
     }
 
     /**
-     * Tests that an empty JSON payload returns the default branch value.
+     * Tests that an empty JSON payload returnsthe default branch value.
      */
     @Test
-    void testExtractBranchFromInvalidPayload() {
-        // A part of a valid payload
-        JSONObject json = new JSONObject("{}");
+    void testExtractBranchFromInvalidPayload() throws IOException {
+        // Mock request with empty JSON payload
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("{}")));
 
-        // Get branch from payload
+        // Read JSON payload
+        String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        JSONObject json = new JSONObject(jsonPayload);
+
+        // Extract branch
         String branch = json.optString("ref", "unknown");
 
         // Assert the default value is returned
@@ -55,7 +65,7 @@ public class RunTestsRequestTest {
      */
     @Test
     void testEmptyRequestReturnsBadRequest() throws IOException {
-        // Mock an empty request
+        // Mock an empty request (no payload)
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         StringWriter responseWriter = new StringWriter();
@@ -64,13 +74,14 @@ public class RunTestsRequestTest {
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader("")));
         when(response.getWriter()).thenReturn(writer);
 
-        int statusCode = RunTests.handleRequest(request, response);
+        RunTests.handleRequest(request, response);
 
         writer.flush();
-        String jsonResponse = responseWriter.toString();
+        String responseContent = responseWriter.toString();
 
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, statusCode);
-        assertTrue(jsonResponse.contains("Empty JSON payload"));
+        // Verify response status
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        assertTrue(responseContent.contains("Empty request payload"));
     }
 
     /**
@@ -79,26 +90,22 @@ public class RunTestsRequestTest {
      * @throws IOException If an I/O error occurs.
      */
     @Test
-    void testInvalidJsonReturnsBadRequest() throws IOException {
-        // Mock an empty request
+    void testInvalidRequestReturnsBadRequest() throws IOException {
+        // Mock an invalid request
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         StringWriter responseWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(responseWriter);
 
-        String invalidJson = "{ invalid-json }";  // Missing quotes
-
-        BufferedReader reader = new BufferedReader(new StringReader(invalidJson));
-
-        when(request.getReader()).thenReturn(reader);
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("{ invalid-json }"))); // Missing quotes
         when(response.getWriter()).thenReturn(writer);
 
-        int statusCode = RunTests.handleRequest(request, response);
+        RunTests.handleRequest(request, response);
 
         writer.flush();
-        String jsonResponse = responseWriter.toString();
+        String responseContent = responseWriter.toString();
 
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, statusCode);
-        assertTrue(jsonResponse.contains("Invalid JSON format"));
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        assertTrue(responseContent.contains("Invalid request format"));
     }
 }
