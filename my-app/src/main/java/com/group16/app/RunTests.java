@@ -31,7 +31,7 @@ public class RunTests {
             String payload = request.getParameter("payload");
 
             // Error if request is blank
-            if (payload.isBlank() || payload == null) {
+            if (payload == null || payload.isBlank()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().println("Empty request payload");
                 return HttpServletResponse.SC_BAD_REQUEST;
