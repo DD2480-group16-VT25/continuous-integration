@@ -1,10 +1,10 @@
-package com.group16.app;
+package com.group16.app; 
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue; 
 
-import org.junit.jupiter.api.Test;
-
-public class AppTest {
+import org.junit.jupiter.api.Test; 
+ 
+public class CompilerTest {
 
     @Test
     public void CompilerClonesAndCompilesSuccessfully() {
@@ -15,6 +15,6 @@ public class AppTest {
     @Test
     public void CompilerClonesAndCompilesUnsuccessfully() {
         // Implement
-        assertTrue(true);
+        assertTrue(false);
     }
 }
