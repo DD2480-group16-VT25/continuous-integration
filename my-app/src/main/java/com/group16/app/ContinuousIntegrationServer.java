@@ -28,6 +28,8 @@ public class ContinuousIntegrationServer extends AbstractHandler
 
         System.out.println(target);
 
+        Compiler.compileProj(request, response);
+
         // here you do all the continuous integration tasks
         // for example
         // 1st clone your repository
