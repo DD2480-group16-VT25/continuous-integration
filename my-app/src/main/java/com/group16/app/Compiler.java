@@ -56,7 +56,7 @@ public class Compiler{
 
         // Clones the to a temporary directory.
         System.out.println("Cloning repository: " + repoUrl);
-        boolean cloneSuccess = cloneRepo(repoUrl, "cloned-repo");
+        boolean cloneSuccess = cloneRepo(repoUrl, extractBranchName(jsonPayload.toString()), "cloned-repo");
         response.getWriter().println("{\"message\": \"CI job done\", \"repo\": \"" + repoUrl + "\", \"success\": " + cloneSuccess + "}");
 
         // If cloning is successful use maven to compile the project
@@ -108,7 +108,7 @@ public class Compiler{
     }
 
     // Clones repository from a url
-    private static boolean cloneRepo(String repoUrl, String cloneDir) throws IOException {
+    private static boolean cloneRepo(String repoUrl, String branchName, String cloneDir) throws IOException {
         try {
             tempDir = Files.createTempDirectory("tempRepo");
 
@@ -117,7 +117,7 @@ public class Compiler{
             Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(tempDir.toFile())
-                .setBranch("refs/heads/assessment")
+                .setBranch("refs/heads/" + branchName)
                 .call();
 
             System.out.println("Repository cloned successfully into " + cloneDir);
@@ -126,6 +126,15 @@ public class Compiler{
             System.err.println("Error cloning repository: " + e.getMessage());
             return false;
         }
+    }
+
+    // Extracts branch name from JSON payload
+    private static String extractBranchName(String json) {
+        JsonReader reader = new JsonReader(new StringReader(json));
+        reader.setStrictness(Strictness.LENIENT);
+        JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+        String ref = jsonObject.get("ref").getAsString();
+        return ref.replace("refs/heads/", "");
     }
 
 
