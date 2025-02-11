@@ -3,6 +3,7 @@ package com.group16.app;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -27,17 +28,19 @@ public class RunTests {
             response.setContentType("text/html;charset=utf-8");
 
             // Read request payload from the request body
-            String requestPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+            String payload = request.getParameter("payload");
 
             // Error if request is blank
-            if (requestPayload.isBlank()) {
+            if (payload.isBlank() || payload == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().println("Empty request payload");
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
 
+            JSONObject json = new JSONObject(payload);
+
             // Extract branch
-            String branch = request.getParameter("ref");
+            String branch = json.optString("ref", "unknown");
             response.getWriter().println("Received branch: " + branch);
             if (branch.equals("refs/heads/assessment")) {
                 response.setStatus(HttpServletResponse.SC_OK);
