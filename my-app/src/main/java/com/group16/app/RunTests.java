@@ -38,6 +38,7 @@ public class RunTests {
 
             // Extract branch
             String branch = request.getParameter("ref");
+            response.getWriter().println("Received branch: " + branch);
             if (branch.equals("refs/heads/assessment")) {
                 response.setStatus(HttpServletResponse.SC_OK);
 
