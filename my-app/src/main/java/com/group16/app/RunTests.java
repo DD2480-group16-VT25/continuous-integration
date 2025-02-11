@@ -40,7 +40,7 @@ public class RunTests {
             JSONObject json = new JSONObject(payload);
 
             // Extract branch
-            String branch = json.optString("ref", "unknown");
+            String branch = json.getString("ref");
             response.getWriter().println("Received branch: " + branch);
             if (branch.equals("refs/heads/assessment")) {
                 response.setStatus(HttpServletResponse.SC_OK);
