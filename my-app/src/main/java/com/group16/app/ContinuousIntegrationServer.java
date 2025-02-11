@@ -26,8 +26,21 @@ public class ContinuousIntegrationServer extends AbstractHandler {
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
 
-        System.out.println(target);
-        // here you do all the continuous integration tasks
+        String checkpayload = request.getParameter("payload");
+
+        if (checkpayload == null || checkpayload.isBlank()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().println("{\"error\": \"Empty JSON payload from CIS\"}");
+        }
+
+        try {
+            JSONObject json = new JSONObject(checkpayload);
+            System.out.println("Received JSON: " + json.toString());
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().println("{\"error\": \"Invalid JSON format from CIS\"}");
+        }
+
         // for example
         // 1st clone your repository
         // 2nd compile the code
@@ -40,18 +53,17 @@ public class ContinuousIntegrationServer extends AbstractHandler {
             response.getWriter().println("Error with webhook post");
         }
 
-
         // 3rd run test
 
         // 4th notify the result        
-        String payload = request.getParameter("payload");
-        String requestURL = request.getRequestURL().toString();
-        JSONObject json = new JSONObject(payload);
-        String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
-        String repo = json.getJSONObject("repository").getString("name");
-        String commitSha = json.getString("after");
+        // String payload = request.getParameter("payload");
+        // String requestURL = request.getRequestURL().toString();
+        // JSONObject json = new JSONObject(payload);
+        // String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
+        // String repo = json.getJSONObject("repository").getString("name");
+        // String commitSha = json.getString("after");
 
-        Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
+        // Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
         
         response.getWriter().println("CI job done");
     }
