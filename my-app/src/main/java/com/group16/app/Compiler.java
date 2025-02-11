@@ -4,6 +4,9 @@ import org.apache.commons.io.FileUtils;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.Strictness;
+import com.google.gson.stream.JsonReader;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jetty.server.Server;
@@ -17,14 +20,25 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Compiler{
     static Path tempDir;
 
+    /*
+     * compileProj clones a Git repository by excrating the url from a JSON payload.
+     * It then compiles the code with maven to see if it can successfully build.
+     * @param request a HttpServletRequest
+     * @param response a HttpServletResponse
+     * @author Marcus Odin
+     */
     public static void compileProj(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+        // Reads the JSON payload
         StringBuilder jsonPayload = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
             String line;
@@ -33,19 +47,25 @@ public class Compiler{
             }
         }
 
+        // Extracts the repo URL from the payload
         String repoUrl = extractRepoUrl(jsonPayload.toString());
         if (repoUrl == null) {
             response.getWriter().println("{\"error\": \"Invalid JSON format\"}");
             return;
         }
 
+        // Clones the to a temporary directory.
         System.out.println("Cloning repository: " + repoUrl);
         boolean cloneSuccess = cloneRepo(repoUrl, "cloned-repo");
         response.getWriter().println("{\"message\": \"CI job done\", \"repo\": \"" + repoUrl + "\", \"success\": " + cloneSuccess + "}");
+
+        // If cloning is successful use maven to compile the project
         if(cloneSuccess){
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("mvn", "clean", "compile");
-            processBuilder.directory(tempDir.toFile());
+            Path projectDir = tempDir.resolve("my-app"); // Goes into the maven project
+
+            processBuilder.directory(projectDir.toFile());
             processBuilder.redirectErrorStream(true);
             try {
                 // Start the Maven process
@@ -63,16 +83,23 @@ public class Compiler{
                 int exitCode = process.waitFor();
                 System.out.println("Maven process exited with code: " + exitCode);
                 
-                // An exit code of 0 typically indicates success.
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    // Extracts the git epository url from a JSON payload
     private static String extractRepoUrl(String json) {
         try {
-            JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+            if (json.startsWith("payload=")) {
+                json = json.substring("payload=".length());
+                json = URLDecoder.decode(json, StandardCharsets.UTF_8);
+            }
+            JsonReader reader = new JsonReader(new StringReader(json));
+            // Set strictness to LENIENT to accept malformed JSON
+            reader.setStrictness(Strictness.LENIENT);
+            JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
             return jsonObject.getAsJsonObject("repository").get("clone_url").getAsString();
         } catch (Exception e) {
             System.err.println("Error parsing JSON: " + e.getMessage());
@@ -80,6 +107,7 @@ public class Compiler{
         }
     }
 
+    // Clones repository from a url
     private static boolean cloneRepo(String repoUrl, String cloneDir) throws IOException {
         try {
             tempDir = Files.createTempDirectory("tempRepo");
@@ -89,7 +117,9 @@ public class Compiler{
             Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(tempDir.toFile())
+                .setBranch("refs/heads/assessment")
                 .call();
+
             System.out.println("Repository cloned successfully into " + cloneDir);
             return true;
         } catch (GitAPIException e) {
