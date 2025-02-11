@@ -130,11 +130,22 @@ public class Compiler{
 
     // Extracts branch name from JSON payload
     private static String extractBranchName(String json) {
-        JsonReader reader = new JsonReader(new StringReader(json));
-        reader.setStrictness(Strictness.LENIENT);
-        JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
-        String ref = jsonObject.get("ref").getAsString();
-        return ref.replace("refs/heads/", "");
+        try {
+            if (json.startsWith("payload=")) {
+                json = json.substring("payload=".length());
+                json = URLDecoder.decode(json, StandardCharsets.UTF_8);
+            }
+            JsonReader reader = new JsonReader(new StringReader(json));
+            reader.setStrictness(Strictness.LENIENT);
+            JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+            String ref = jsonObject.get("ref").getAsString();
+            return ref.replace("refs/heads/", "");
+        }
+        catch (Exception e) {
+            System.err.println("Error parsing JSON: " + e.getMessage());
+            return null;
+        }
+
     }
 
 
