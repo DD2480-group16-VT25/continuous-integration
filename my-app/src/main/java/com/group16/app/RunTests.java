@@ -5,9 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.stream.Collectors;
 import org.apache.maven.shared.invoker.*;
-import org.json.JSONObject;
 
 /**
  * Handles incoming webhook requests and triggers Maven test execution.
@@ -17,7 +15,7 @@ public class RunTests {
     
     /**
      * Handles incoming HTTP requests from GitHub webhooks.
-     * Reads the JSON payload, extracts the branch name, and runs tests only if the branch is 'assessment'.
+     * Reads the URL-encoded form payload, extracts the branch name, and runs tests only if the branch is 'assessment'.
      *
      * @param request  The incoming HTTP request containing the webhook payload.
      * @param response The HTTP response object to send back results.
@@ -28,28 +26,15 @@ public class RunTests {
         try {
             response.setContentType("text/html;charset=utf-8");
 
-            // Read JSON payload from the request body
-            String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+            String branch = request.getParameter("ref");
 
-            // Error if JSON is blank
-            if (jsonPayload.isBlank()) {
+            if (branch == null || branch.isBlank()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().println("Empty request payload");
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
 
-            JSONObject json;
-            try {
-                json = new JSONObject(jsonPayload);
-                System.out.println("Received JSON: " + json.toString());
-            } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("Invalid request format");
-                return HttpServletResponse.SC_BAD_REQUEST;
-            }
 
-            // Extract branch
-            String branch = json.optString("ref", "unknown");
             if (branch.equals("refs/heads/feat/runtests")) {
                 response.setStatus(HttpServletResponse.SC_OK);
 

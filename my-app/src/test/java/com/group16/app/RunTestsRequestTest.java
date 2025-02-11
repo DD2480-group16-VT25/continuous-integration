@@ -1,10 +1,8 @@
 package com.group16.app;
 
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.stream.Collectors;
 import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,52 +10,43 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for the {@link RunTests} class, focusing on handling webhook requests.
- * These tests validate JSON parsing, branch extraction, and response handling.
+ * These tests validate form-encoded parsing, branch extraction, and response handling.
  */
 public class RunTestsRequestTest {
 
     /**
-     * Tests that a valid JSON payload correctly extracts the branch name.
+     * Tests that a valid URL-encoded payload correctly extracts the branch name.
      *
      * @throws IOException If an I/O error occurs.
      */
     @Test
     void testExtractBranchFromValidPayload() throws IOException {
-        // Mock request with a JSON payload
+        // A part of a valid request
         HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("{\"ref\": \"refs/heads/assessment\"}")));
+        when(request.getParameter("ref")).thenReturn("refs/heads/assessment");
 
-        // Read JSON payload
-        String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-        JSONObject json = new JSONObject(jsonPayload);
-
-        // Extract branch
-        String branch = json.optString("ref", "unknown");
+        // Get branch from request
+        String branch = request.getParameter("ref");
 
         // Assert the correct branch is extracted
         assertEquals("refs/heads/assessment", branch);
     }
 
     /**
-     * Tests that an empty JSON payload returnsthe default branch value.
+     * Tests that an empty URL-encoded payload returns the default branch value.
      */
     @Test
-    void testExtractBranchFromInvalidPayload() throws IOException {
-        // Mock request with empty JSON payload
+    void testExtractBranchFromInvalidPayload() {
+        // Mock request with missing 'ref' parameter
         HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("{}")));
+        when(request.getParameter("ref")).thenReturn(null);
 
-        // Read JSON payload
-        String jsonPayload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-        JSONObject json = new JSONObject(jsonPayload);
+        // Get branch from request
+        String branch = request.getParameter("ref");
 
-        // Extract branch
-        String branch = json.optString("ref", "unknown");
-
-        // Assert the default value is returned
-        assertEquals("unknown", branch);
+        // If parameter is missing, default should be null
+        assertNull(branch);
     }
-
     /**
      * Tests that an empty HTTP request results in a 400 Bad Request response.
      *
@@ -65,13 +54,13 @@ public class RunTestsRequestTest {
      */
     @Test
     void testEmptyRequestReturnsBadRequest() throws IOException {
-        // Mock an empty request (no payload)
+        // Mock an empty request (no parameters)
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         StringWriter responseWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(responseWriter);
 
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("")));
+        when(request.getParameter("ref")).thenReturn(null);
         when(response.getWriter()).thenReturn(writer);
 
         RunTests.handleRequest(request, response);
@@ -79,33 +68,8 @@ public class RunTestsRequestTest {
         writer.flush();
         String responseContent = responseWriter.toString();
 
-        // Verify response status
+        // Verify response status is 400 Bad Request
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
         assertTrue(responseContent.contains("Empty request payload"));
-    }
-
-    /**
-     * Tests that an invalid JSON request results in a 400 Bad Request response.
-     *
-     * @throws IOException If an I/O error occurs.
-     */
-    @Test
-    void testInvalidRequestReturnsBadRequest() throws IOException {
-        // Mock an invalid request
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        StringWriter responseWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(responseWriter);
-
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader("{ invalid-json }"))); // Missing quotes
-        when(response.getWriter()).thenReturn(writer);
-
-        RunTests.handleRequest(request, response);
-
-        writer.flush();
-        String responseContent = responseWriter.toString();
-
-        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertTrue(responseContent.contains("Invalid request format"));
     }
 }
