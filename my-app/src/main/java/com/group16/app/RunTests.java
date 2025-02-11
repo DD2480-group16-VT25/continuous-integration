@@ -48,7 +48,7 @@ public class RunTests {
 
             // Extract branch
             String branch = json.optString("ref", "unknown");
-            if (branch.equals("refs/heads/feat/runtests")) { // testing branch for now
+            if (branch.equals("refs/heads/assessment")) { // testing branch for now
                 response.setStatus(HttpServletResponse.SC_OK);
 
                 // Run Maven Tests
