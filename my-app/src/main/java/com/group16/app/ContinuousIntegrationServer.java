@@ -26,19 +26,21 @@ public class ContinuousIntegrationServer extends AbstractHandler {
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
 
-        String checkpayload = request.getParameter("payload");
+        String checkPayload = request.getParameter("payload");
 
-        if (checkpayload == null || checkpayload.isBlank()) {
+        if (checkPayload == null || checkPayload.isBlank()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().println("{\"error\": \"Empty JSON payload from CIS\"}");
+            response.getWriter().println("Empty JSON in ContinuousIntegrationServer.java");
+            response.getWriter().println("If you haven't pushed anything then you don't have to worry");
         }
 
         try {
-            JSONObject json = new JSONObject(checkpayload);
+            JSONObject json = new JSONObject(checkPayload);
             System.out.println("Received JSON: " + json.toString());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().println("{\"error\": \"Invalid JSON format from CIS\"}");
+            response.getWriter().println("Invalid JSON format in ContinuousIntegrationServer.java");
+            response.getWriter().println("If you haven't pushed anything then you don't have to worry");
         }
 
         // for example
@@ -53,17 +55,15 @@ public class ContinuousIntegrationServer extends AbstractHandler {
             response.getWriter().println("Error with webhook post");
         }
 
-        // 3rd run test
-
         // 4th notify the result        
-        // String payload = request.getParameter("payload");
-        // String requestURL = request.getRequestURL().toString();
-        // JSONObject json = new JSONObject(payload);
-        // String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
-        // String repo = json.getJSONObject("repository").getString("name");
-        // String commitSha = json.getString("after");
+        String payload = request.getParameter("payload");
+        String requestURL = request.getRequestURL().toString();
+        JSONObject json = new JSONObject(payload);
+        String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
+        String repo = json.getJSONObject("repository").getString("name");
+        String commitSha = json.getString("after");
 
-        // Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
+        Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
         
         response.getWriter().println("CI job done");
     }
