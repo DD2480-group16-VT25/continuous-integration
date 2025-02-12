@@ -1,7 +1,6 @@
 package com.group16.app; 
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,10 +26,8 @@ public class CompilerTest {
     }
 
     @Test
-    public void CompilerClonesAndCompilesUnsuccessfullyWithEmptyInput(){
+    public void CompilerReturnsFalseWithBad() throws IOException{
         HttpServletResponse response = mock(HttpServletResponse.class);
-        assertThrows(NullPointerException.class, () -> {
-            Compiler.compileProj(response, "", "");
-        });
+        assertFalse(Compiler.compileProj(response, "", ""));
     }
 }

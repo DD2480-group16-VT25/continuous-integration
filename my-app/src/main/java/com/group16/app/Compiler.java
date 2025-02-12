@@ -27,8 +27,7 @@ public class Compiler{
         // Clones the to a temporary directory.
         System.out.println("Cloning repository: " + repoUrl);
         boolean cloneSuccess = cloneRepo(repoUrl, branchName, "cloned-repo");
-        response.getWriter().println("{\"message\": \"CI job done\", \"repo\": \"" + repoUrl + "\", \"success\": " + cloneSuccess + "}");
-
+        System.out.println("Cloned repo: " + repoUrl + ", Branch: " + branchName + ", Successful: " + cloneSuccess);
         // If cloning is successful use maven to compile the project
         if(cloneSuccess){
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -58,7 +57,7 @@ public class Compiler{
                 e.printStackTrace();
             }
         } else {
-            response.getWriter().println("{\"message\": \"CI job done\", \"repo\": \"" + repoUrl + "\", \"success\": false}");
+            System.out.println("Cloned repo: " + repoUrl + ", Branch: " + branchName + ", Successful: " + cloneSuccess);
             return false;
         }
         return false;
@@ -74,7 +73,7 @@ public class Compiler{
             Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(tempDir.toFile())
-                .setBranch("refs/heads/" + branchName)
+                .setBranch(branchName)
                 .call();
 
             System.out.println("Repository cloned successfully into " + cloneDir);

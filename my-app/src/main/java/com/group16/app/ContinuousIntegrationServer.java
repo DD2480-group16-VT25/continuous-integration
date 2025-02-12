@@ -77,7 +77,9 @@ public class ContinuousIntegrationServer extends AbstractHandler {
             boolean compileResultOK, testResultOK;
             try {
                 compileResultOK = Compiler.compileProj(response, repoURL, branch);
+                System.out.println("Compile result: " + compileResultOK);
                 testResultOK = RunTests.runTests(response);
+                System.out.println("Test result: " + testResultOK);
             } catch (Exception e) {
                 // Something went wrong with the compilation or test running
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -92,10 +94,7 @@ public class ContinuousIntegrationServer extends AbstractHandler {
                 }
                 return;
             }
-
-            System.out.println("Compile result: " + compileResultOK);
-            System.out.println("Test result: " + testResultOK);
-
+            
             // Both compile and test methods ran without exceptions, so we can
             // update the status of the commit according to results
             try {
