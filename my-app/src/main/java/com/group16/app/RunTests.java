@@ -50,7 +50,7 @@ public class RunTests {
             }
 
             // Extract branch
-            String branch = json.optString("ref", "nobranch");
+            String branch = json.optString("ref", "no_branch");
             response.getWriter().println("Received branch: " + branch);
             if (branch.equals("refs/heads/assessment")) {
                 response.setStatus(HttpServletResponse.SC_OK);
