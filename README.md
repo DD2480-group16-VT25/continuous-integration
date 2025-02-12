@@ -28,3 +28,6 @@ ngrok http http://localhost:8080
 ```
 
 This will show you the public URL that you can use to send requests to the server. Under "forwarding" you will see a URL that looks like `https://<random_string>.ngrok-free.app`. You can use this URL to send requests to the server, for example by adding it to the webhook in your GitHub repository.
+
+## Javadoc
+To generate the javadoc run `mvn javadoc:javadoc`. The documentation is then found under `target/site/apidocs`.
