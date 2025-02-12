@@ -10,17 +10,21 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-
+/**
+ * This class is responsible for cloning a Git repository and compiling the code with Maven.
+ */
 public class Compiler{
     static Path tempDir;
 
-    /*
+    /**
      * compileProj clones a Git repository from a specified branch and repo URL.
      * It then compiles the code with maven to see if it can successfully build.
-     * @response a HttpServletResponse to write the response to
+     * @param response a HttpServletResponse to write the response to
      * @param repoUrl a String containing the URL of the repository to clone
      * @param branchName a String containing the name of the branch to clone
      * @author Marcus Odin
+     * @return true if the project was successfully cloned and compiled, false otherwise
+     * @throws IOException if there is an issue reading the request body
      */
     public static boolean compileProj(HttpServletResponse response, String repoUrl, String branchName) throws IOException {
 

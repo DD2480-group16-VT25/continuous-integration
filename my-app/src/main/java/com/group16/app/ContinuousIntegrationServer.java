@@ -114,7 +114,11 @@ public class ContinuousIntegrationServer extends AbstractHandler {
         }).start();
     }
  
-    // used to start the CI server in command line
+    /**
+     * Main method to start the server.
+     * @param args Command line arguments
+     * @throws Exception If the server fails to start
+     */
     public static void main(String[] args) throws Exception
     {
         Server server = new Server(8080);

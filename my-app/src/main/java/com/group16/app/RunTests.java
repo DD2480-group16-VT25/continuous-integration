@@ -22,10 +22,8 @@ public class RunTests {
      * Handles incoming HTTP requests from GitHub webhooks.
      * Reads the request payload, extracts the branch name,.
      *
-     * @param branch The branch name from the payload.
      * @param response The HTTP response object to send back results.
      * @return true if the tests pass, false if tests fail
-     * @throws IOException If there is an issue reading the request body.
      */
     public static boolean runTests(HttpServletResponse response) {
         try {
@@ -54,17 +52,7 @@ public class RunTests {
     public static int runMavenTests() {
         try {
             Invoker invoker = new DefaultInvoker();
-
-            // Auto-detect Maven Home
-            String mavenHome = System.getenv("MAVEN_HOME");
-            if (mavenHome == null || mavenHome.isEmpty()) {
-                mavenHome = System.getProperty("maven.home");
-            }
-            if (mavenHome == null || mavenHome.isEmpty()) {
-                mavenHome = "/usr/share/maven"; // Default for Linux/macOS
-            }
             invoker.setMavenHome(null); // Set Maven installation directory
-            // invoker.setMavenHome(new File(mavenHome)); // Set Maven installation directory
             invoker.setWorkingDirectory(new File(".")); // Project root directory
 
             InvocationRequest request = new DefaultInvocationRequest();
