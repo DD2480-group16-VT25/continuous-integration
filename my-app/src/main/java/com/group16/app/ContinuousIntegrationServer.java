@@ -1,15 +1,14 @@
 package com.group16.app;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-
 import java.io.IOException;
 
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 
 /**
@@ -25,8 +24,10 @@ public class ContinuousIntegrationServer extends AbstractHandler {
                        HttpServletResponse response) 
         throws IOException, ServletException {
         response.setContentType("text/html;charset=utf-8");
+        baseRequest.setHandled(true);
+        response.setStatus(HttpServletResponse.SC_OK);
+
         // Only POST requests are allowed
-    
         if (!request.getMethod().equals("POST")) {
             response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             response.getWriter().println("Only POST requests are allowed");
@@ -38,10 +39,6 @@ public class ContinuousIntegrationServer extends AbstractHandler {
             response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
-
-
-        baseRequest.setHandled(true);
-        response.setStatus(HttpServletResponse.SC_OK);
 
         // Extracting what is neccesary from the payload.
         JSONObject json;

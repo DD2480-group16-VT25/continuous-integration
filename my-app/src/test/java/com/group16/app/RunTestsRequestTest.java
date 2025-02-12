@@ -1,12 +1,10 @@
 package com.group16.app;
 
-import org.junit.jupiter.api.Test;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the {@link RunTests} class, focusing on handling webhook requests.
