@@ -37,7 +37,17 @@ public class RunTests {
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
 
-            JSONObject json = new JSONObject(payload);
+            // JSONObject json = new JSONObject(payload);
+            
+            JSONObject json;
+            try {
+                json = new JSONObject(payload);
+                System.out.println("Received JSON: " + json.toString());
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().println("Invalid JSON format in RunTests.java");
+                return;
+            }
 
             // Extract branch
             String branch = json.getString("ref");
