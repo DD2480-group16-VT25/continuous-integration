@@ -22,7 +22,7 @@ public class ContinuousIntegrationServer extends AbstractHandler {
                        HttpServletResponse response) 
         throws IOException, ServletException {
         
-        response.setContentType("text/html;charset=utf-8");
+        response.setContentType("application/json;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
 
@@ -32,15 +32,20 @@ public class ContinuousIntegrationServer extends AbstractHandler {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().println("Empty JSON in ContinuousIntegrationServer.java");
             response.getWriter().println("If you haven't pushed anything then you don't have to worry");
+            return;
         }
 
+        JSONObject checkjson;
+
         try {
-            JSONObject json = new JSONObject(checkPayload);
-            System.out.println("Received JSON: " + json.toString());
+            checkjson = new JSONObject(checkPayload);
+            System.out.println("Received JSON: " + checkjson.toString());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().println("Invalid JSON format in ContinuousIntegrationServer.java");
             response.getWriter().println("If you haven't pushed anything then you don't have to worry");
+            return;
+
         }
 
         // for example
@@ -58,7 +63,18 @@ public class ContinuousIntegrationServer extends AbstractHandler {
         // 4th notify the result        
         String payload = request.getParameter("payload");
         String requestURL = request.getRequestURL().toString();
-        JSONObject json = new JSONObject(payload);
+
+        JSONObject json;
+        try {
+            json = new JSONObject(payload);
+            System.out.println("Received JSON: " + json.toString());
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().println("Invalid JSON format in ContinuousIntegrationServer.java");
+            response.getWriter().println("If you haven't pushed anything then you don't have to worry");
+            return;
+        }
+        // JSONObject json = new JSONObject(payload);
         String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
         String repo = json.getJSONObject("repository").getString("name");
         String commitSha = json.getString("after");
