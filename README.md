@@ -81,7 +81,7 @@ mvn test
 
 - **Linus**: Implemented the notification feature together with Robin, including unit tests. Worked on getting the CI server to use asynchronous processing, and differentiating between different types of requests.
 - **Robin**: Implemented the notification feature together with Linus, including unit tests.
--
+- **Ellen**: Implemented the testing feature and the unit tests.
 
 ## Team state
 
@@ -89,6 +89,12 @@ We agree most with the description/checklist of **collaborating**. We felt that 
 
 
 ## Implementations explained
+
+### Testing
+
+We use Maven Invoker to run the tests. After the compilation and cloning of the repo, the Maven Invoker executes the tests on the cloned branch and captures the exit code, 0 for success and non-zero for failure.
+
+The unit tests check if the CI server correctly runs tests and other things that might occurr, such as if the cloned directory is missing or when Maven throws MavenInvocationException.
 
 ### Notifications
 
