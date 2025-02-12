@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -40,7 +41,12 @@ public class Notification {
                 }""",
                 status.toString().toLowerCase(),
                 requestURL,
-                status == Status.SUCCESS ? "Build succeeded" : "Build failed");
+                switch (status) {
+                    case SUCCESS -> "The build/test was successful";
+                    case FAILURE -> "The build/test failed";
+                    case ERROR -> "An error occurred during the build/test";
+                    case PENDING -> "The build/test is pending";
+                });
 
         String url = String.format("%s/repos/%s/%s/statuses/%s", GITHUB_API_URL, owner, repo, commitSha);
 
@@ -55,8 +61,8 @@ public class Notification {
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(String.format("GitHub Response for %s: %d - %s",
-                    request.method(), response.statusCode(), response.body()));
+            // System.out.println(String.format("GitHub Response for %s: %d - %s",
+            //         request.method(), response.statusCode(), response.body()));
 
             if (response.statusCode() != 201) { // GitHub API returns 201 for successful POST requests
                 throw new RuntimeException("Failed to send notification to GitHub. Status code: " +

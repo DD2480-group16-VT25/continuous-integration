@@ -1,13 +1,17 @@
 package com.group16.app;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.stream.Collectors;
-import org.apache.maven.shared.invoker.*;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 
 /**
  * Handles incoming webhook requests and triggers Maven test execution.
@@ -16,52 +20,29 @@ import org.apache.maven.shared.invoker.*;
 public class RunTests {
     /**
      * Handles incoming HTTP requests from GitHub webhooks.
-     * Reads the request payload, extracts the branch name, and runs tests only if the branch is 'assessment'.
+     * Reads the request payload, extracts the branch name,.
      *
-     * @param request  The incoming HTTP request containing the webhook payload.
+     * @param branch The branch name from the payload.
      * @param response The HTTP response object to send back results.
-     * @return HTTP status code (200 if successful, 400 if bad request, 500 if no response is written).
+     * @return true if the tests pass, false if tests fail
      * @throws IOException If there is an issue reading the request body.
      */
-    public static int handleRequest(HttpServletRequest request, HttpServletResponse response) {
+    public static boolean runTests(HttpServletResponse response) {
         try {
-            response.setContentType("text/html;charset=utf-8");
-
-            // Read request payload from the request body
-            String payload = request.getParameter("payload");
-
-            // Error if request is blank
-            if (payload == null || payload.isBlank()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("Empty request payload");
-                return HttpServletResponse.SC_BAD_REQUEST;
-            }
-
-            JSONObject json = new JSONObject(payload);
-
-            // Extract branch
-            String branch = json.getString("ref");
-            response.getWriter().println("Received branch: " + branch);
-            if (branch.equals("refs/heads/assessment")) {
-                response.setStatus(HttpServletResponse.SC_OK);
-
-                // Run Maven Tests
-                int testResult = runMavenTests();
-                
-                if (testResult == 0) {
-                    response.getWriter().println("Tests passed");
-                    return HttpServletResponse.SC_OK;
-                } else {
-                    response.getWriter().println("Tests failed, exit code = " + testResult);
-                    return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-                }
+            // Run Maven Tests
+            int testResult = runMavenTests();
+            
+            // Report if the tests passed
+            if (testResult == 0) {
+                response.getWriter().println("Tests passed");
+                return true;
             } else {
-                response.getWriter().println("Not the assessment branch");
-                return HttpServletResponse.SC_OK;
+                response.getWriter().println("Tests failed, exit code = " + testResult);
+                return false;
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            return false;
         }
     }
 
@@ -82,7 +63,8 @@ public class RunTests {
             if (mavenHome == null || mavenHome.isEmpty()) {
                 mavenHome = "/usr/share/maven"; // Default for Linux/macOS
             }
-            invoker.setMavenHome(new File(mavenHome)); // Set Maven installation directory
+            invoker.setMavenHome(null); // Set Maven installation directory
+            // invoker.setMavenHome(new File(mavenHome)); // Set Maven installation directory
             invoker.setWorkingDirectory(new File(".")); // Project root directory
 
             InvocationRequest request = new DefaultInvocationRequest();
