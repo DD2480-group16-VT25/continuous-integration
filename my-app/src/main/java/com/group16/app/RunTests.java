@@ -38,6 +38,12 @@ public class RunTests {
         try {
             Path clonedDir = Compiler.tempDir.resolve("my-app");
 
+            // Check if directory is found
+            if (clonedDir == null) {
+                System.out.println("Cloned directory not found.");
+                return false;
+            }
+
             // // Write to .env file inside 'my-app'
             File envFile = new File(clonedDir.toFile(), ".env");
             try (FileWriter writer = new FileWriter(envFile, false)) {
@@ -48,10 +54,6 @@ public class RunTests {
                 return false;
             }
 
-            if (clonedDir == null) {
-                System.out.println("Cloned directory not found.");
-                return false;
-            }
             
             System.out.println("Running tests in directory: " + clonedDir.toAbsolutePath());
 
