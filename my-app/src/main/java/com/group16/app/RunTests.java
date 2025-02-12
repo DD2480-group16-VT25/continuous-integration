@@ -46,7 +46,7 @@ public class RunTests {
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().println("Invalid JSON format in RunTests.java");
-                return;
+                return HttpServletResponse.SC_BAD_REQUEST;
             }
 
             // Extract branch
