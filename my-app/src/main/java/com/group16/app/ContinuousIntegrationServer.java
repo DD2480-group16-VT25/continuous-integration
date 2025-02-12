@@ -38,7 +38,7 @@ public class ContinuousIntegrationServer extends AbstractHandler {
 
         try {
             checkjson = new JSONObject(checkPayload);
-            System.out.println("Received JSON: " + checkjson.toString());
+            System.out.println("Received JSON CIS 41: " + checkjson.toString());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().println("Invalid JSON format in ContinuousIntegrationServer.java");
@@ -64,7 +64,7 @@ public class ContinuousIntegrationServer extends AbstractHandler {
         JSONObject json;
         try {
             json = new JSONObject(payload);
-            System.out.println("Received JSON: " + json.toString());
+            System.out.println("Received JSON CIS 67: " + json.toString());
             // JSONObject json = new JSONObject(payload);
             String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
             String repo = json.getJSONObject("repository").getString("name");
