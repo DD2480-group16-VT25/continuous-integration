@@ -22,7 +22,7 @@ public class CompilerTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         when(response.getWriter()).thenReturn(printWriter);
-        assertTrue(Compiler.compileProj(response, "https://github.com/DD2480-group16-VT25/continuous-integration.git", "compile"));
+        assertTrue(Compiler.compileProj(response, "https://github.com/DD2480-group16-VT25/continuous-integration.git", "main"));
     }
 
     @Test
