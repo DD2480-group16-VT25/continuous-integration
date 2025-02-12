@@ -47,16 +47,22 @@ public class ContinuousIntegrationServer extends AbstractHandler {
 
         // 3rd run test
 
-        // 4th notify the result        
+        // 4th notify the result       
+        System.out.println("Request: " + request);
         String payload = request.getParameter("payload");
-        String requestURL = request.getRequestURL().toString();
-        JSONObject json = new JSONObject(payload);
-        String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login");
-        String repo = json.getJSONObject("repository").getString("name");
-        String commitSha = json.getString("after");
-
-        Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
-        
+        System.out.println("Payload: " + payload);
+        if(payload != null){
+            try{
+                String requestURL = request.getRequestURL().toString();
+                JSONObject json = new JSONObject(payload);
+                String owner = json.getJSONObject("repository").getJSONObject("owner").getString("login"); 
+                String repo = json.getJSONObject("repository").getString("name");
+                String commitSha = json.getString("after");
+                Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
+            } catch (NullPointerException e){
+                e.printStackTrace();
+            }
+        }
         response.getWriter().println("CI job done");
     }
  
