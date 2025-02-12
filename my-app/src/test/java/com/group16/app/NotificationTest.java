@@ -21,11 +21,11 @@ public class NotificationTest {
     // This commit being tested has the message:
     // "feat: begin implementing notifications class".
     // And can be found at:
-    // https://github.com/DD2480-group16-VT25/continuous-integration/commit/028d21cf77074ac45a320b0275911a7da9a32c87
-    private static final String commitSha = "028d21cf77074ac45a320b0275911a7da9a32c87";
+    // https://github.com/DD2480-group16-VT25/continuous-integration/commit/f5d9ccb62b77550cd5888ba59ffc8d06c25359cd
+    private static final String commitSha = "f5d9ccb62b77550cd5888ba59ffc8d06c25359cd";
     private static final String repo = "continuous-integration";
     private static final String owner = "DD2480-group16-VT25";
-    private static final String requestURL = "https://api.github.com/repos/DD2480-group16-VT25/continuous-integration/statuses/028d21cf77074ac45a320b0275911a7da9a32c87";
+    private static final String requestURL = "https://api.github.com/repos/DD2480-group16-VT25/continuous-integration/statuses/f5d9ccb62b77550cd5888ba59ffc8d06c25359cd";
     private static final Dotenv dotenv = Dotenv.load();
     private static final String GITHUB_PAT = dotenv.get("GITHUB_PAT");
     private static final String url = String.format("https://api.github.com/repos/%s/%s/statuses/%s", owner, repo,
