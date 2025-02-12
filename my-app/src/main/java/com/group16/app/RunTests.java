@@ -1,6 +1,7 @@
 package com.group16.app;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -22,15 +23,25 @@ public class RunTests {
      * Handles incoming HTTP requests from GitHub webhooks.
      * Reads the request payload, extracts the branch name,.
      *
-     * @param branch The branch name from the payload.
      * @param response The HTTP response object to send back results.
      * @return true if the tests pass, false if tests fail
      * @throws IOException If there is an issue reading the request body.
      */
     public static boolean runTests(HttpServletResponse response) {
         try {
+            // Get the path of the cloned repo
+            Path clonedDir = Compiler.tempDir.resolve("my-app");
+
+            if (clonedDir == null) {
+                System.out.println("Error: cloned repository not found.");
+                return false;
+            }
+            System.out.println(clonedDir);
+            // Path myApp = clonedDir.resolve("my-app");
+            System.out.println("Running tests in directory: " + clonedDir.toAbsolutePath());
+
             // Run Maven Tests
-            int testResult = runMavenTests();
+            int testResult = runMavenTests(clonedDir);
             
             // Report if the tests passed
             if (testResult == 0) {
@@ -49,26 +60,17 @@ public class RunTests {
     /**
      * Executes Maven tests using the Maven Shared Invoker API.
      *
+     * @param The path of the newly cloned repository
      * @return Exit code from the Maven test execution (0 if successful, >0 if tests fail).
      */
-    public static int runMavenTests() {
+    public static int runMavenTests(Path clonedDir) {
         try {
             Invoker invoker = new DefaultInvoker();
-
-            // Auto-detect Maven Home
-            String mavenHome = System.getenv("MAVEN_HOME");
-            if (mavenHome == null || mavenHome.isEmpty()) {
-                mavenHome = System.getProperty("maven.home");
-            }
-            if (mavenHome == null || mavenHome.isEmpty()) {
-                mavenHome = "/usr/share/maven"; // Default for Linux/macOS
-            }
             invoker.setMavenHome(null); // Set Maven installation directory
-            // invoker.setMavenHome(new File(mavenHome)); // Set Maven installation directory
-            invoker.setWorkingDirectory(new File(".")); // Project root directory
+            invoker.setWorkingDirectory(clonedDir.toFile()); // Set directory to cloned repo
 
             InvocationRequest request = new DefaultInvocationRequest();
-            request.setPomFile(new File("pom.xml"));
+            request.setPomFile(new File(clonedDir.toFile(), "pom.xml"));
             request.setGoals(Collections.singletonList("test")); // Run tests
 
             // Capture Maven output
