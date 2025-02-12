@@ -58,51 +58,61 @@ public class ContinuousIntegrationServer extends AbstractHandler {
             return;
         }
 
+        // Respond to the webhook to prevent timeout
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().println("CI job started");
+
         // Status PENDING while we are building and testing
-        try {
-            Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
-        } catch (Exception e) {
-            // Something went wrong with the notification API call
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().println("Error accessing the notification API");
-            return;
-        }
-
-        // Compile and run tests
-        boolean compileResultOK, testResultOK;
-        try {
-            compileResultOK = Compiler.compileProj(response, repoURL, branch);
-            testResultOK = RunTests.runTests(response);
-        } catch (Exception e) {
-            // Something went wrong with the compilation or test running
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().println("Error compiling or running tests: " + e.getMessage());
-
+        new Thread(() -> {
             try {
-                Notification.sendNotification(Status.ERROR, requestURL, owner, repo, commitSha);
-            } catch (Exception notificationError) {
-                // If notification fails, log it but keep the original error response
-                response.getWriter().println("Additionally, failed to send error notification: " + notificationError.getMessage());
+                Notification.sendNotification(Status.PENDING, requestURL, owner, repo, commitSha);
+            } catch (Exception e) {
+                // Something went wrong with the notification API call
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                System.err.println("Error accessing the notification API");
+                return;
             }
-            return;
-        }
 
-        // Both compile and test methods ran without exceptions, so we can
-        // update the status of the commit according to results
-        try {
-            if (compileResultOK && testResultOK) {
-                Notification.sendNotification(Status.SUCCESS, requestURL, owner, repo, commitSha);
-            } else {
-                Notification.sendNotification(Status.FAILURE, requestURL, owner, repo, commitSha);
+            // Compile and run tests
+            boolean compileResultOK, testResultOK;
+            try {
+                compileResultOK = Compiler.compileProj(response, repoURL, branch);
+                testResultOK = RunTests.runTests(response);
+            } catch (Exception e) {
+                // Something went wrong with the compilation or test running
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                System.err.println("Error compiling or running tests: " + e.getMessage());
+
+                try {
+                    Notification.sendNotification(Status.ERROR, requestURL, owner, repo, commitSha);
+                } catch (Exception notificationError) {
+                    // If notification fails, log it but keep the original error response
+                    System.err.println(
+                            "Additionally, failed to send error notification: " + notificationError.getMessage());
+                }
+                return;
             }
-        } catch (Exception e) {
-            // Something went wrong with the notification API call
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().println("Error accessing the notification API: " + e.getMessage());
-            return;
-        }
 
-        response.getWriter().println("CI job done");
+            System.out.println("Compile result: " + compileResultOK);
+            System.out.println("Test result: " + testResultOK);
+
+            // Both compile and test methods ran without exceptions, so we can
+            // update the status of the commit according to results
+            try {
+                if (compileResultOK && testResultOK) {
+                    Notification.sendNotification(Status.SUCCESS, requestURL, owner, repo, commitSha);
+                } else {
+                    Notification.sendNotification(Status.FAILURE, requestURL, owner, repo, commitSha);
+                }
+            } catch (Exception e) {
+                // Something went wrong with the notification API call
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                System.err.println("Error accessing the notification API: " + e.getMessage());
+                return;
+            }
+
+            System.out.println("CI job done");
+        }).start();
     }
  
     // used to start the CI server in command line
