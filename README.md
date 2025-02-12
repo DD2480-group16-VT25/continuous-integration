@@ -65,6 +65,10 @@ ngrok http http://localhost:8080
 
 This will show you the public URL that you can use to send requests to the server. Under "forwarding" you will see a URL that looks like `https://<random_string>.ngrok-free.app`. You can use this URL to send requests to the server, for example by adding it to the webhook in your GitHub repository.
 
+
+## Javadoc
+To generate the javadoc run `mvn javadoc:javadoc`. The documentation is then found under `target/site/apidocs`.
+
 ## Testing the CI server
 
 To run the tests, you can use the following commands:
@@ -91,3 +95,4 @@ We agree most with the description/checklist of **collaborating**. We felt that 
 We decided to use GitHub status notifications, we looked up the GitHub API documentation and created a Personal Access Token (PAT) to authenticate our requests. In the code we create a JSON object with the required information and sent a POST request to the GitHub API.
 
 The unit tests work by setting the status of a single commit to each of the possible states (success, failure, error, pending) and then checking that the status is set correctly (using a GET request). Between each test, the status is reset to `pending` to ensure that the tests are independent of each other.
+
