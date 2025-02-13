@@ -3,9 +3,9 @@ Assignment #2 for DD2480 - Group 16
 
 ## Pre-requisites
 
-To run the server, you need to have maven installed. If you don't have maven installed, you can install it by following the instructions [here](https://maven.apache.org/install.html).
+To run the server, you need to have maven installed. If you don't have maven installed, you can install it by following the instructions [here](https://maven.apache.org/install.html). The Maven version is **Apache Maven 3.6.3**.
 
-You also need Java $\geq$ 18.
+You also need Java $\geq$ 17.
 
 ### Dependencies
 
