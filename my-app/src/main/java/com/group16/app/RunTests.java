@@ -21,6 +21,8 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
  * using Maven.
  */
 public class RunTests {
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String GITHUB_PAT = dotenv.get("GITHUB_PAT");
     /**
      * Runs the test suite for the cloned repository.
      *
@@ -32,8 +34,6 @@ public class RunTests {
      *                 back to the client.
      * @return {@code true} if tests pass successfully, {@code false} if they fail.
      */
-    private static final Dotenv dotenv = Dotenv.load();
-    private static final String GITHUB_PAT = dotenv.get("GITHUB_PAT");
     public static boolean runTests(HttpServletResponse response) {
         try {
             Path clonedDir = Compiler.tempDir.resolve("my-app");
