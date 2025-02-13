@@ -103,3 +103,5 @@ We decided to use GitHub status notifications, we looked up the GitHub API docum
 
 The unit tests work by setting the status of a single commit to each of the possible states (success, failure, error, pending) and then checking that the status is set correctly (using a GET request). Between each test, the status is reset to `pending` to ensure that the tests are independent of each other.
 
+### Compilation
+There are three main parts to compilation, get the right repository URL that is specified the payload. Then checkout the specified branch and lastly run the maven command to compile the code. In this case we have created a function that returns true if the repository was successfully cloned and compiled. 
