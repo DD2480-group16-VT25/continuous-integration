@@ -29,6 +29,8 @@ public class Notification {
      * @param owner      The owner (user or organization) of the GitHub repository
      * @param repo       The name of the GitHub repository
      * @param commitSha  The SHA hash of the commit to update the status for
+     * 
+     * @throws RuntimeException If an error occurs while sending the notification
      */
     public static void sendNotification(Status status, String requestURL, String owner, String repo, String commitSha)
             throws RuntimeException {

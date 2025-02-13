@@ -18,6 +18,19 @@ import org.json.JSONObject;
  * a notification to the notification API.
  */
 public class ContinuousIntegrationServer extends AbstractHandler {
+    /**
+     * Method to handle POST requests to the CI server. It extracts the necessary
+     * information from the payload, compiles the project, runs the tests and sends
+     * a notification to the notification API.
+     * 
+     * @param target      The target of the request
+     * @param baseRequest The original unwrapped request object
+     * @param request     The HttpServletRequest object
+     * @param response    The response as a HttpServletResponse object
+     * 
+     * @throws IOException      If an input or output exception occurs
+     * @throws ServletException If a servlet exception occurs
+     */
     public void handle(String target,
                        Request baseRequest,
                        HttpServletRequest request,
