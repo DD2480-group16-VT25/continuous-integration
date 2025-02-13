@@ -82,6 +82,7 @@ mvn test
 - **Linus**: Implemented the notification feature together with Robin, including unit tests. Worked on getting the CI server to use asynchronous processing, and differentiating between different types of requests.
 - **Robin**: Implemented the notification feature together with Linus, including unit tests.
 - **Ellen**: Implemented the testing feature and the unit tests.
+- **Marcus**: Implementation of cloning and compiling a specified repo and branch according to the HTTP request. 
 
 ## Team state
 
